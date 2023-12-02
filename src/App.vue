@@ -5,10 +5,7 @@
 </script>
 
 <template>
-  <div>
-    <router-view></router-view>
-    <p>666</p>
-  </div>
+  <router-view></router-view>
 </template>
 
 <style scoped></style>
