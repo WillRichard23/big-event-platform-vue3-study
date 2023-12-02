@@ -2,31 +2,81 @@
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 const isRegister = ref(true)
+const ruleForm = ref({
+  username: '',
+  password: '',
+  repassword: ''
+})
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 5, max: 10, message: '用户名必须是5-10位的字符', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    {
+      pattern: /^\S{6,15}$/,
+      message: '密码必须是6-15位的非空字符',
+      trigger: 'blur'
+    }
+  ],
+  repassword: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    {
+      pattern: /^\S{6,15}$/,
+      message: '密码必须是6-15位的非空字符',
+      trigger: 'blur'
+    },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== ruleForm.value.password) {
+          callback(new Error('两次输入密码不一致'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
+}
 </script>
 
 <template>
   <el-row class="login-page">
     <el-col :span="12" class="background"></el-col>
     <el-col :span="6" :offset="3" class="login-form">
-      <el-form ref="form" size="large" autocomplete="off" v-if="isRegister">
+      <el-form
+        ref="form"
+        :model="ruleForm"
+        :rules="rules"
+        size="large"
+        autocomplete="off"
+        v-if="isRegister"
+      >
         <el-form-item>
           <h1>注册</h1>
         </el-form-item>
-        <el-form-item>
-          <el-input :prefix-icon="User" placeholder="请输入用户名"></el-input>
+        <el-form-item prop="username">
+          <el-input
+            :prefix-icon="User"
+            placeholder="请输入用户名"
+            v-model="ruleForm.username"
+          ></el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="password">
           <el-input
             :prefix-icon="Lock"
             type="password"
             placeholder="请输入密码"
+            v-model="ruleForm.password"
           ></el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="repassword">
           <el-input
             :prefix-icon="Lock"
             type="password"
-            placeholder="请输入再次密码"
+            placeholder="请再次输入密码"
+            v-model="ruleForm.repassword"
           ></el-input>
         </el-form-item>
         <el-form-item>
@@ -104,7 +154,7 @@ const isRegister = ref(true)
     .copyright {
       width: 100%;
       color: #666;
-      font-size: 1.5vh;
+      font-size: 16px;
       text-align: center;
       letter-spacing: 1px;
     }
