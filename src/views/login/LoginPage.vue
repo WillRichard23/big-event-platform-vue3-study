@@ -1,7 +1,9 @@
 <script setup>
+import { userRegisterService } from '@/api/user'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 const isRegister = ref(true)
+const form = ref()
 const ruleForm = ref({
   username: '',
   password: '',
@@ -21,7 +23,7 @@ const rules = {
     }
   ],
   repassword: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
+    { required: true, message: '请输入二次密码', trigger: 'blur' },
     {
       pattern: /^\S{6,15}$/,
       message: '密码必须是6-15位的非空字符',
@@ -38,6 +40,12 @@ const rules = {
       trigger: 'blur'
     }
   ]
+}
+const register = async () => {
+  await form.value.validate()
+  await userRegisterService(ruleForm.value)
+  ElMessage.success('注册成功')
+  isRegister.value = false
 }
 </script>
 
@@ -80,7 +88,12 @@ const rules = {
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button class="button" type="primary" auto-insert-space>
+          <el-button
+            @click="register"
+            class="button"
+            type="primary"
+            auto-insert-space
+          >
             注册
           </el-button>
         </el-form-item>
