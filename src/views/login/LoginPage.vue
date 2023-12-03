@@ -1,8 +1,11 @@
 <script setup>
-import { userRegisterService } from '@/api/user'
+import { userRegisterService, userLoginService } from '@/api/user'
 import { User, Lock } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-const isRegister = ref(true)
+import { ref, watch, onMounted } from 'vue'
+import { useUserStore } from '@/stores'
+import { useRouter } from 'vue-router'
+const isRegister = ref(false)
+const remenberMe = ref(false)
 const form = ref()
 const ruleForm = ref({
   username: '',
@@ -41,18 +44,67 @@ const rules = {
     }
   ]
 }
+
 const register = async () => {
   await form.value.validate()
-  await userRegisterService(ruleForm.value)
-  ElMessage.success('注册成功')
-  isRegister.value = false
+  const res = await userRegisterService(ruleForm.value)
+  console.log(res)
+  if (res.status === 200) {
+    ElMessage.success(res.data.message)
+    isRegister.value = false
+  } else {
+    ElMessage.error(res.error.message)
+  }
 }
+
+const userStore = useUserStore()
+const router = useRouter()
+
+const login = async () => {
+  await form.value.validate()
+  const res = await userLoginService(ruleForm.value)
+  console.log(res)
+  if (res.status === 200) {
+    if (remenberMe.value) {
+      userStore.setUsername(ruleForm.value.username)
+      userStore.setPassword(ruleForm.value.password)
+    } else {
+      userStore.removeUsername()
+      userStore.removePassword()
+    }
+    userStore.setRemenberMe(remenberMe.value)
+    userStore.setToken(res.data.token)
+    ElMessage.success(res.data.message)
+    router.push('/')
+  } else {
+    ElMessage.error(res.error.message)
+  }
+}
+
+//忘记密码
+const forgot = () => ElMessage('暂未实现')
+
+// 注册登录切换监听
+watch(isRegister, () => {
+  ruleForm.value = {
+    username: '',
+    password: '',
+    repassword: ''
+  }
+})
+
+onMounted(() => {
+  ruleForm.value.username = userStore.username
+  ruleForm.value.password = userStore.password
+  remenberMe.value = userStore.remenberMe
+})
 </script>
 
 <template>
   <el-row class="login-page">
     <el-col :span="12" class="background"></el-col>
     <el-col :span="6" :offset="3" class="login-form">
+      <!-- 注册表单 -->
       <el-form
         ref="form"
         :model="ruleForm"
@@ -103,15 +155,29 @@ const register = async () => {
           </el-link>
         </el-form-item>
       </el-form>
-      <el-form ref="form" size="large" autocomplete="off" v-else>
+
+      <!-- 登录表单 -->
+      <el-form
+        :model="ruleForm"
+        :rules="rules"
+        ref="form"
+        size="large"
+        autocomplete="off"
+        v-else
+      >
         <el-form-item>
           <h1>登录</h1>
         </el-form-item>
-        <el-form-item>
-          <el-input :prefix-icon="User" placeholder="请输入用户名"></el-input>
-        </el-form-item>
-        <el-form-item>
+        <el-form-item prop="username">
           <el-input
+            v-model="ruleForm.username"
+            :prefix-icon="User"
+            placeholder="请输入用户名"
+          ></el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input
+            v-model="ruleForm.password"
             name="password"
             :prefix-icon="Lock"
             type="password"
@@ -120,12 +186,19 @@ const register = async () => {
         </el-form-item>
         <el-form-item class="flex">
           <div class="flex">
-            <el-checkbox>记住我</el-checkbox>
-            <el-link type="primary" :underline="false">忘记密码？</el-link>
+            <el-checkbox v-model="remenberMe">记住我</el-checkbox>
+            <el-link @click="forgot" type="primary" :underline="false"
+              >忘记密码？</el-link
+            >
           </div>
         </el-form-item>
         <el-form-item>
-          <el-button class="button" type="primary" auto-insert-space>
+          <el-button
+            @click="login"
+            class="button"
+            type="primary"
+            auto-insert-space
+          >
             登录
           </el-button>
         </el-form-item>
