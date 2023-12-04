@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores'
 import { useRouter } from 'vue-router'
 const isRegister = ref(false)
 const remenberMe = ref(false)
+const isLoading = ref(false)
 const form = ref()
 const ruleForm = ref({
   username: '',
@@ -49,6 +50,7 @@ const register = async () => {
   await form.value.validate()
   const res = await userRegisterService(ruleForm.value)
   console.log(res)
+  isLoading.value = true
   if (res.status === 200) {
     ElMessage.success(res.data.message)
     isRegister.value = false
@@ -62,6 +64,7 @@ const router = useRouter()
 
 const login = async () => {
   await form.value.validate()
+  isLoading.value = true
   const res = await userLoginService(ruleForm.value)
   console.log(res)
   if (res.status === 200) {
@@ -79,6 +82,7 @@ const login = async () => {
   } else {
     ElMessage.error(res.error.message)
   }
+  isLoading.value = false
 }
 
 //忘记密码
@@ -198,6 +202,7 @@ onMounted(() => {
             class="button"
             type="primary"
             auto-insert-space
+            :loading="isLoading"
           >
             登录
           </el-button>
