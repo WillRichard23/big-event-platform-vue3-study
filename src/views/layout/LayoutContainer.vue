@@ -9,7 +9,32 @@ import {
   SwitchButton,
   CaretBottom
 } from '@element-plus/icons-vue'
+import { onMounted } from 'vue'
 import avatar from '@/assets/default.png'
+import { useUserStore } from '@/stores'
+import { useRouter } from 'vue-router'
+const userStore = useUserStore()
+const router = useRouter()
+
+const handleCommand = async (key) => {
+  if (key === 'logout') {
+    await ElMessageBox.confirm('你确定要退出吗？', '退出登录', {
+      type: 'warning',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消'
+    })
+    userStore.removeToken()
+    userStore.setUser({})
+    ElMessage('退出登录成功')
+    router.push('/login')
+  } else {
+    router.push(`/user/${key}`)
+  }
+}
+
+onMounted(() => {
+  userStore.getUser()
+})
 </script>
 
 <template>
@@ -53,10 +78,14 @@ import avatar from '@/assets/default.png'
     </el-aside>
     <el-container>
       <el-header>
-        <div>操作人员：<strong>Will_Richard</strong></div>
-        <el-dropdown placement="bottom-end">
+        <div>
+          操作人员：<strong>{{
+            userStore.user.nickname || userStore.user.username
+          }}</strong>
+        </div>
+        <el-dropdown placement="bottom-end" @command="handleCommand">
           <span class="el-dropdown__box">
-            <el-avatar :src="avatar" />
+            <el-avatar :src="userStore.user.user_pic || avatar" />
             <el-icon><CaretBottom /></el-icon>
           </span>
           <template #dropdown>

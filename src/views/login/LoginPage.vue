@@ -69,13 +69,12 @@ const login = async () => {
   console.log(res)
   if (res.status === 200) {
     if (remenberMe.value) {
-      userStore.setUsername(ruleForm.value.username)
-      userStore.setPassword(ruleForm.value.password)
+      userStore.setLoginInfo('username', ruleForm.value.username)
+      userStore.setLoginInfo('password', ruleForm.value.password)
     } else {
-      userStore.removeUsername()
-      userStore.removePassword()
+      userStore.removeLoginInfo()
     }
-    userStore.setRemenberMe(remenberMe.value)
+    userStore.setLoginInfo('remenberMe', remenberMe.value)
     userStore.setToken(res.data.token)
     ElMessage.success(res.data.message)
     router.push('/')
@@ -98,9 +97,9 @@ watch(isRegister, () => {
 })
 
 onMounted(() => {
-  ruleForm.value.username = userStore.username
-  ruleForm.value.password = userStore.password
-  remenberMe.value = userStore.remenberMe
+  ruleForm.value.username = userStore.loginInfo.username
+  ruleForm.value.password = userStore.loginInfo.password
+  remenberMe.value = userStore.loginInfo.remenberMe
 })
 </script>
 
