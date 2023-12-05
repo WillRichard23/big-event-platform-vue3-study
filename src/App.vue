@@ -1,11 +1,11 @@
 <script setup>
-// import { useRoute, useRouter } from 'vue-router'
-// const router = useRouter()
-// const route = useRoute()
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 </script>
 
 <template>
-  <router-view></router-view>
+  <el-config-provider :locale="zhCn">
+    <router-view></router-view>
+  </el-config-provider>
 </template>
 
 <style scoped></style>
