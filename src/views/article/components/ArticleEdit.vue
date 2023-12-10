@@ -3,8 +3,15 @@ import { ref } from 'vue'
 import ChannelSelect from './ChannelSelect.vue'
 import { Plus } from '@element-plus/icons-vue'
 import { QuillEditor } from '@vueup/vue-quill'
-import { artPublishService } from '@/api/article'
+import {
+  artPublishService,
+  artGetDetailService,
+  artEditService
+} from '@/api/article'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { baseURL } from '@/utils/request'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 const visibleDrawer = ref(false)
 
 const formRef = ref()
@@ -33,7 +40,10 @@ const onPublish = async (state) => {
   }
 
   if (formModel.value.id) {
-    console.log('编辑')
+    await artEditService(fd)
+    ElMessage.success('修改成功')
+    visibleDrawer.value = false
+    emit('success', 'edit')
   } else {
     await artPublishService(fd)
     ElMessage.success('添加成功')
@@ -46,12 +56,39 @@ const editorRef = ref()
 const open = async (row) => {
   visibleDrawer.value = true
   if (row.id) {
-    console.log(row)
-    formModel.value = row
+    const res = await artGetDetailService(row.id)
+    formModel.value = res.data.data
+    imgUrl.value = baseURL + formModel.value.cover_img
+    formModel.value.cover_img = await imageUrlToFile(
+      imgUrl.value,
+      formModel.value.cover_img
+    )
   } else {
     formModel.value = { ...defaultForm }
     imgUrl.value = ''
     editorRef.value.setHTML('')
+  }
+}
+
+// 将网络图片地址转换为File对象
+async function imageUrlToFile(url, fileName) {
+  try {
+    // 第一步：使用axios获取网络图片数据
+    const response = await axios.get(url, { responseType: 'arraybuffer' })
+    const imageData = response.data
+
+    // 第二步：将图片数据转换为Blob对象
+    const blob = new Blob([imageData], {
+      type: response.headers['content-type']
+    })
+
+    // 第三步：创建一个新的File对象
+    const file = new File([blob], fileName, { type: blob.type })
+
+    return file
+  } catch (error) {
+    console.error('将图片转换为File对象时发生错误:', error)
+    throw error
   }
 }
 defineExpose({
