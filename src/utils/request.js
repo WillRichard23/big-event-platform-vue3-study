@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { useUserStore } from '@/stores'
-import { ElMessage } from 'element-plus'
 import router from '@/router'
 
 const baseURL = 'http://big-event-vue-api-t.itheima.net'
@@ -37,7 +36,7 @@ instance.interceptors.response.use(
     // TODO 5. 处理401错误
     //特殊情况
     if (err.response?.status === 401) {
-      router.push('./login')
+      router.push('/login')
     }
     //默认情况
     ElMessage.error(err.response.data.message || '服务异常')

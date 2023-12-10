@@ -17,3 +17,5 @@ export const artGetListService = (params) =>
   request.get('/my/article/list', {
     params
   })
+
+export const artPublishService = (data) => request.post('/my/article/add', data)
